@@ -15,93 +15,101 @@
 ## Optional Parameters:
 ##     $commentBreaks - Show HTML comments before and after loading the library files. (bool; default: true)
 ##     $htmlDebug     - Prints debug info. (bool; default: false)
+##	   $resourceCache - Cache time for resources, in seconds (int; default: 86400)
 ##
 #macro(loadResource $library)
-	## ESTABLISH DEFAULT REMOTE RESOURCE SET
-	#if(!$UtilMethods.isSet($defaultResources))
-		#set($defaultResources = $!contents.getEmptyMap())
-		#set($_temp = $!defaultResources.put("angularjs", "http://ajax.googleapis.com/ajax/libs/angularjs/1.0.2/angular.min.js"))
-		#set($_temp = $!defaultResources.put("chromeframe", "http://ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"))
-		#set($_temp = $!defaultResources.put("dojo", "http://ajax.googleapis.com/ajax/libs/dojo/1.8.1/dojo/dojo.js"))
-		#set($_temp = $!defaultResources.put("extjs", "ajax.googleapis.com/ajax/libs/ext-core/3.1.0/ext-core.js"))
-		#set($_temp = $!defaultResources.put("jquery", "http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"))
-		#set($_temp = $!defaultResources.put("jqueryui", "http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.0/jquery-ui.min.js"))
-		#set($_temp = $!defaultResources.put("mootools", "http://ajax.googleapis.com/ajax/libs/mootools/1.4.5/mootools-yui-compressed.js"))
-		#set($_temp = $!defaultResources.put("prototype", "http://ajax.googleapis.com/ajax/libs/prototype/1.7.1.0/prototype.js"))
-		#set($_temp = $!defaultResources.put("scriptaculous", "http://ajax.googleapis.com/ajax/libs/scriptaculous/1.9.0/scriptaculous.js"))
-		#set($_temp = $!defaultResources.put("swfobjcet", "http://ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js"))
-		#set($_temp = $!defaultResources.put("webfont", "http://ajax.googleapis.com/ajax/libs/webfont/1.0.31/webfont.js"))
+	## SET DEFAULT CACHE TIME
+	#if(!$UtilMethods.isSet($resourceCache))
+		#set($resourceCache = 86400)
 	#end
 	
-	## DEFAULT TO SHOWING COMMENTS BREAKS FOR THE RESOURCE UNLESS OTHERWISE SET
-	#if(!$UtilMethods.isSet($commentBreaks))
-		#set($commentBreaks = true)
-	#end
-	
-	## DEFAULT TO NOT SHOWING DEBUG DATA
-	#if(!$UtilMethods.isSet($htmlDebug))
-		#set($htmlDebug = false)
-	#end
-	
-	## CHECK TO SEE IF WE'VE STARTED TRACKING LOADED LIBRARIES. IF NOT, START NOW.
-	#if(!$UtilMethods.isSet($loadedLibraries))
-		#set($loadedLibraries = $!contents.getEmptyList())
-	#end
-	
-	## SET UP THE SHARED HOST FOR THE FILE QUERY, IF PROVIDED
-	#if($UtilMethods.isSet($pluginapitool.loadProperty("com.learndotcms.plugins.resourceloader","sharedHostId")))
-		#set($sharedHost = " conhost:${pluginapitool.loadProperty('com.learndotcms.plugins.resourceloader','sharedHostId')}")
-	#end
-	
-	## IF THIS LIBRARY HASN'T BEEN LOADED ALREADY, DO IT (PREVENTS REDUNDANT LOADS)
-	#if(!$loadedLibraries.contains($library))
-		#if($commentBreaks)
-<!-- Begin Resource: ${library} -->
-		#end
-	
-		## GET THE FILES ASSOCIATED WITH THIS RESOURCE LIBRARY
-		#set($libraryQuery = "+structureName:WebResource +(conhost:${host.identifier}$!{sharedHost}) +WebResource.resourceId:${library}")
-		#if($dotcontent.count($libraryQuery) > 0)
-			#foreach($file in $dotcontent.pull($libraryQuery,0,'WebResource.sortOrder asc'))
-				## SET THE APPROPRIATE FILE SOURCE
-				#if($file.source.selectValue == 'cdn')
-					#set($src = $file.cdn)
-				#else
-					## THIS RETURNS AN UGLY /dotAsset PATH, NEED TO FIND THE HUMAN-READABLE URI
-					#set($src = $filetool.getURI($filetool.getFile($file.identifier, true)))
-				#end
-				
-				## SET UP DIFFERENT MARKUP FOR FILE TYPES
-				#if($file.fileName.contains('js'))
-<script src="${src}"></script>
-				#elseif($file.fileName.contains('css'))
-<link rel="stylesheet" type="text/css" href="${src}" />
-				#elseif($file.fileName.contains('vtl'))
-					#dotParse($src)
-				#end
-				
-				## RUN ANY SUPPORTING CODE IF DETECTED
-				#if($UtilMethods.isSet($file.code))
-					${render.eval($file.code)}
-				#end
-			#end
-		## TRY TO GET IT FROM OUR DEFAULT CDN SOURCES
-		#else
-			## IS THE REQUESTED LIBRARY IN THE DEFAULT LIST?
-			#if($defaultResources.get($library))
-<script src="${defaultResources.get($library)}"></script>			
-			#end
-		#end
-		#if($commentBreaks)
-<!-- End Resource: ${library} -->
+	## CACHE RESOURCE CALLS
+	#dotcache("resourceLoader-${library}",$resourceCache)
+		## ESTABLISH DEFAULT REMOTE RESOURCE SET
+		#if(!$UtilMethods.isSet($defaultResources))
+			#set($defaultResources = $!contents.getEmptyMap())
+			#set($_temp = $!defaultResources.put("angularjs", "http://ajax.googleapis.com/ajax/libs/angularjs/1.0.2/angular.min.js"))
+			#set($_temp = $!defaultResources.put("chromeframe", "http://ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"))
+			#set($_temp = $!defaultResources.put("dojo", "http://ajax.googleapis.com/ajax/libs/dojo/1.8.1/dojo/dojo.js"))
+			#set($_temp = $!defaultResources.put("extjs", "ajax.googleapis.com/ajax/libs/ext-core/3.1.0/ext-core.js"))
+			#set($_temp = $!defaultResources.put("jquery", "http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"))
+			#set($_temp = $!defaultResources.put("jqueryui", "http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.0/jquery-ui.min.js"))
+			#set($_temp = $!defaultResources.put("mootools", "http://ajax.googleapis.com/ajax/libs/mootools/1.4.5/mootools-yui-compressed.js"))
+			#set($_temp = $!defaultResources.put("prototype", "http://ajax.googleapis.com/ajax/libs/prototype/1.7.1.0/prototype.js"))
+			#set($_temp = $!defaultResources.put("scriptaculous", "http://ajax.googleapis.com/ajax/libs/scriptaculous/1.9.0/scriptaculous.js"))
+			#set($_temp = $!defaultResources.put("swfobjcet", "http://ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js"))
+			#set($_temp = $!defaultResources.put("webfont", "http://ajax.googleapis.com/ajax/libs/webfont/1.0.31/webfont.js"))
 		#end
 		
-		## NOW ADD THIS LIBRARY TO THE LIST OF LOADED ONES
-		#set($_temp = $loadedLibraries.add($library))
-	#end
+		## DEFAULT TO SHOWING COMMENTS BREAKS FOR THE RESOURCE UNLESS OTHERWISE SET
+		#if(!$UtilMethods.isSet($commentBreaks))
+			#set($commentBreaks = true)
+		#end
+		
+		## DEFAULT TO NOT SHOWING DEBUG DATA
+		#if(!$UtilMethods.isSet($htmlDebug))
+			#set($htmlDebug = false)
+		#end
+		
+		## CHECK TO SEE IF WE'VE STARTED TRACKING LOADED LIBRARIES. IF NOT, START NOW.
+		#if(!$UtilMethods.isSet($loadedLibraries))
+			#set($loadedLibraries = $!contents.getEmptyList())
+		#end
+		
+		## SET UP THE SHARED HOST FOR THE FILE QUERY, IF PROVIDED
+		#if($UtilMethods.isSet($pluginapitool.loadProperty("com.learndotcms.plugins.resourceloader","sharedHostId")))
+			#set($sharedHost = " conhost:${pluginapitool.loadProperty('com.learndotcms.plugins.resourceloader','sharedHostId')}")
+		#end
+		
+		## IF THIS LIBRARY HASN'T BEEN LOADED ALREADY, DO IT (PREVENTS REDUNDANT LOADS)
+		#if(!$loadedLibraries.contains($library))
+			#if($commentBreaks)
+<!-- Begin Resource: ${library} -->
+			#end
+		
+			## GET THE FILES ASSOCIATED WITH THIS RESOURCE LIBRARY
+			#set($libraryQuery = "+structureName:WebResource +(conhost:${host.identifier}$!{sharedHost}) +WebResource.resourceId:${library}")
+			#if($dotcontent.count($libraryQuery) > 0)
+				#foreach($file in $dotcontent.pull($libraryQuery,0,'WebResource.sortOrder asc'))
+					## SET THE APPROPRIATE FILE SOURCE
+					#if($file.source.selectValue == 'cdn')
+						#set($src = $file.cdn)
+					#else
+						## THIS RETURNS AN UGLY /dotAsset PATH, NEED TO FIND THE HUMAN-READABLE URI
+						#set($src = $filetool.getURI($filetool.getFile($file.identifier, true)))
+					#end
+					
+					## SET UP DIFFERENT MARKUP FOR FILE TYPES
+					#if($file.fileName.contains('js'))
+<script src="${src}"></script>
+					#elseif($file.fileName.contains('css'))
+<link rel="stylesheet" type="text/css" href="${src}" />
+					#elseif($file.fileName.contains('vtl'))
+						#dotParse($src)
+					#end
+					
+					## RUN ANY SUPPORTING CODE IF DETECTED
+					#if($UtilMethods.isSet($file.code))
+						${render.eval($file.code)}
+					#end
+				#end
+			## TRY TO GET IT FROM OUR DEFAULT CDN SOURCES
+			#else
+				## IS THE REQUESTED LIBRARY IN THE DEFAULT LIST?
+				#if($defaultResources.get($library))
+<script src="${defaultResources.get($library)}"></script>			
+				#end
+			#end
+			#if($commentBreaks)
+<!-- End Resource: ${library} -->
+			#end
+			
+			## NOW ADD THIS LIBRARY TO THE LIST OF LOADED ONES
+			#set($_temp = $loadedLibraries.add($library))
+		#end
 	
-	## SHOW DEBUG INFO
-	#if($htmlDebug)
+		## SHOW DEBUG INFO
+		#if($htmlDebug)
 <!-- DEBUG INFO (library: ${library}) 
 	${esc.d}library: ${library}
 	${esc.d}commentBreaks: ${commentBreaks}
@@ -109,5 +117,6 @@
 	Files in library: ${dotcontent.count("+structureName:WebResource +(conhost:${host.identifier}$!{sharedHost}) +WebResource.resourceId:${library}")}
 	Currently loaded: ${loadedLibraries}
 -->
+		#end
 	#end
 #end
