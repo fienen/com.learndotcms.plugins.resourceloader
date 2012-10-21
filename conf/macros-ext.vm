@@ -32,7 +32,7 @@
 	
 	## SET UP THE SHARED HOST FOR THE FILE QUERY, IF PROVIDED
 	#if($UtilMethods.isSet($pluginapitool.loadProperty("com.learndotcms.plugins.resourceloader","sharedHostId")))
-		#set($sharedHost = " conhost:${pluginapitool.loadProperty("com.learndotcms.plugins.resourceloader","sharedHostId")}")
+		#set($sharedHost = " conhost:${pluginapitool.loadProperty('com.learndotcms.plugins.resourceloader','sharedHostId')}")
 	#end
 	
 	## IF THIS LIBRARY HASN'T BEEN LOADED ALREADY, DO IT (PREVENTS REDUNDANT LOADS)
@@ -69,17 +69,17 @@
 		#end
 	#end
 	
+	## NOW ADD THIS LIBRARY TO THE LIST OF LOADED ONES
+	#set($_temp = $loadedLibraries.add($library))
+	
 	## SHOW DEBUG INFO
 	#if($htmlDebug)
 <!-- DEBUG INFO (library: ${library}) 
 	${esc.d}library: ${library}
 	${esc.d}commentBreaks: ${commentBreaks}
-	Shared Host ID: ${pluginapitool.loadProperty("com.learndotcms.plugins.resourceloader","sharedHostId")}
+	Shared Host ID: $!{pluginapitool.loadProperty("com.learndotcms.plugins.resourceloader","sharedHostId")}
 	Files in library: ${dotcontent.count("+structureName:WebResource +(conhost:${host.identifier}$!{sharedHost}) +WebResource.resourceId:${library}")}
 	Currently loaded: ${loadedLibraries}
 -->
 	#end
-	
-	## NOW ADD THIS LIBRARY TO THE LIST OF LOADED ONES
-	#set($_temp = $loadedLibraries.add($library))
 #end
