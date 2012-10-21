@@ -111,7 +111,6 @@
 		## SHOW DEBUG INFO
 		#if($htmlDebug)
 <!-- DEBUG INFO (library: ${library}) 
-	${esc.d}library: ${library}
 	${esc.d}commentBreaks: ${commentBreaks}
 	Shared Host ID: $!{pluginapitool.loadProperty("com.learndotcms.plugins.resourceloader","sharedHostId")}
 	Files in library: ${dotcontent.count("+structureName:WebResource +(conhost:${host.identifier}$!{sharedHost}) +WebResource.resourceId:${library}")}
