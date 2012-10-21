@@ -45,17 +45,18 @@
 		#foreach($file in $dotcontent.pull("+structureName:WebResource +(conhost:${host.identifier}$!{sharedHost}) +WebResource.resourceId:${library}",0,''))
 			## SET THE APPROPRIATE FILE SOURCE
 			#if($file.source.selectValue == 'cdn')
-				#set($src = $file.source)
+				#set($src = $file.cdn)
 			#else
-				#set($src = $file.uri)
+				## THIS RETURNS AN UGLY /dotAsset PATH, NEED TO FIND THE HUMAN-READABLE URI
+				#set($src = $filetool.getURI($filetool.getFile($file.identifier, true)))
 			#end
 			
 			## SET UP DIFFERENT MARKUP FOR FILE TYPES
-			#if($file.extension == 'js')
+			#if($file.fileName.contains('js'))
 <script src="${src}"></script>
-			#elseif($file.extension == 'css')
+			#elseif($file.fileName.contains('css'))
 <link rel="stylesheet" type="text/css" href="${src}" />
-			#elseif($file.extension == 'vtl')
+			#elseif($file.fileName.contains('vtl'))
 				#dotParse($src)
 			#end
 			
