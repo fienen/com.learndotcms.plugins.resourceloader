@@ -1,0 +1,57 @@
+## Macro:       loadResource()
+## Author:      Michael Fienen
+## Date:        12.10.21
+## Version:     1.121021
+## E-mail:      fienen@gmail.com
+## Website:     http://learndotcms.com/
+## Description: Loads a set of files to an HTML page based on a library ID. Supports JavaScript, CSS, or VTL.
+##              Supports shared hosts by setting the host's ID in the plugin's plugin.properties file.
+##
+## Required Parameters:
+##     $library       - The name of the library you wish to load. (str)
+##
+## Optional Parameters:
+##     $commentBreaks - Show HTML comments before and after loading the library files. (bool; default: true)
+##
+#macro(loadResource $library)
+	## DEFAULT TO SHOWING COMMENTS BREAKS FOR THE RESOURCE UNLESS OTHERWISE SET
+	#if(!$UtilMethods.isSet($commentBreaks))
+		#set($commentBreaks = true)
+	#end
+	
+	## SET UP THE SHARED HOST FOR THE FILE QUERY, IF PROVIDED
+	#if($UtilMethods.isSet($pluginapitool.loadProperty("com.learndotcms.plugins.resourceloader","sharedHostId")))
+		#set($sharedHost = " conhost:${pluginapitool.loadProperty("com.learndotcms.plugins.resourceloader","sharedHostId")}")
+	#end
+	
+	#if($commentBreaks)
+<!-- Begin Resource: ${library} -->
+	#end
+	
+	## GET THE FILES ASSOCIATED WITH THIS RESOURCE LIBRARY
+	#foreach($file in $dotcontent.pull("+structureName:WebResource +(conhost:${host.identifier}$!{sharedHost}) +WebResource.resourceId:${library}",0,''))
+		## SET THE APPROPRIATE FILE SOURCE
+		#if($file.source.selectValue == 'cdn')
+			#set($src = $file.source)
+		#else
+			#set($src = $file.uri)
+		#end
+		
+		## SET UP DIFFERENT MARKUP FOR FILE TYPES
+		#if($file.extension == 'js')
+<script src="${src}"></script>
+		#elseif($file.extension == 'css')
+<link rel="stylesheet" type="text/css" href="${src}" />
+		#elseif($file.extension == 'vtl')
+			#dotParse($src)
+		#end
+		
+		## RUN ANY SUPPORTING CODE IF DETECTED
+		#if($UtilMethods.isSet($file.code))
+			${render.eval($file.code)}
+		#end
+	#end
+	#if($commentBreaks)
+<!-- End Resource: ${library} -->
+	#end
+#end
