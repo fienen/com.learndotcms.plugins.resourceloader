@@ -12,6 +12,7 @@
 ##
 ## Optional Parameters:
 ##     $commentBreaks - Show HTML comments before and after loading the library files. (bool; default: true)
+##     $htmlDebug     - Prints debug info. (bool; default: false)
 ##
 #macro(loadResource $library)
 	## DEFAULT TO SHOWING COMMENTS BREAKS FOR THE RESOURCE UNLESS OTHERWISE SET
@@ -19,39 +20,66 @@
 		#set($commentBreaks = true)
 	#end
 	
+	## DEFAULT TO NOT SHOWING DEBUG DATA
+	#if(!$UtilMethods.isSet($htmlDebug))
+		#set($htmlDebug = false)
+	#end
+	
+	## CHECK TO SEE IF WE'VE STARTED TRACKING LOADED LIBRARIES. IF NOT, START NOW.
+	#if(!$UtilMethods.isSet($loadedLibraries))
+		#set($loadedLibraries = $contents.getEmptyList())
+	#end
+	
 	## SET UP THE SHARED HOST FOR THE FILE QUERY, IF PROVIDED
 	#if($UtilMethods.isSet($pluginapitool.loadProperty("com.learndotcms.plugins.resourceloader","sharedHostId")))
 		#set($sharedHost = " conhost:${pluginapitool.loadProperty("com.learndotcms.plugins.resourceloader","sharedHostId")}")
 	#end
 	
-	#if($commentBreaks)
+	## IF THIS LIBRARY HASN'T BEEN LOADED ALREADY, DO IT (PREVENTS REDUNDANT LOADS)
+	#if(!$loadedLibraries.contains($library))
+		#if($commentBreaks)
 <!-- Begin Resource: ${library} -->
+		#end
+	
+		## GET THE FILES ASSOCIATED WITH THIS RESOURCE LIBRARY
+		#foreach($file in $dotcontent.pull("+structureName:WebResource +(conhost:${host.identifier}$!{sharedHost}) +WebResource.resourceId:${library}",0,''))
+			## SET THE APPROPRIATE FILE SOURCE
+			#if($file.source.selectValue == 'cdn')
+				#set($src = $file.source)
+			#else
+				#set($src = $file.uri)
+			#end
+			
+			## SET UP DIFFERENT MARKUP FOR FILE TYPES
+			#if($file.extension == 'js')
+<script src="${src}"></script>
+			#elseif($file.extension == 'css')
+<link rel="stylesheet" type="text/css" href="${src}" />
+			#elseif($file.extension == 'vtl')
+				#dotParse($src)
+			#end
+			
+			## RUN ANY SUPPORTING CODE IF DETECTED
+			#if($UtilMethods.isSet($file.code))
+				${render.eval($file.code)}
+			#end
+		#end
+		#if($commentBreaks)
+<!-- End Resource: ${library} -->
+		#end
 	#end
 	
-	## GET THE FILES ASSOCIATED WITH THIS RESOURCE LIBRARY
-	#foreach($file in $dotcontent.pull("+structureName:WebResource +(conhost:${host.identifier}$!{sharedHost}) +WebResource.resourceId:${library}",0,''))
-		## SET THE APPROPRIATE FILE SOURCE
-		#if($file.source.selectValue == 'cdn')
-			#set($src = $file.source)
-		#else
-			#set($src = $file.uri)
-		#end
-		
-		## SET UP DIFFERENT MARKUP FOR FILE TYPES
-		#if($file.extension == 'js')
-<script src="${src}"></script>
-		#elseif($file.extension == 'css')
-<link rel="stylesheet" type="text/css" href="${src}" />
-		#elseif($file.extension == 'vtl')
-			#dotParse($src)
-		#end
-		
-		## RUN ANY SUPPORTING CODE IF DETECTED
-		#if($UtilMethods.isSet($file.code))
-			${render.eval($file.code)}
-		#end
+	## SHOW DEBUG INFO
+	#if($htmlDebug)
+<!-- DEBUG INFO (library: ${library}) 
+	${esc.d}library: ${library}
+	${esc.d}commentBreaks: ${commentBreaks}
+	Shared Host ID: ${pluginapitool.loadProperty("com.learndotcms.plugins.resourceloader","sharedHostId")}
+	Files in library: ${dotcontent.count("+structureName:WebResource +(conhost:${host.identifier}$!{sharedHost}) +WebResource.resourceId:${library}")}
+	Currently loaded: ${loadedLibraries}
+-->
 	#end
-	#if($commentBreaks)
-<!-- End Resource: ${library} -->
-	#end
+	
+	## NOW ADD THIS LIBRARY TO THE LIST OF LOADED ONES
+	#set($_temp = $loadedLibraries.add($library))
 #end
