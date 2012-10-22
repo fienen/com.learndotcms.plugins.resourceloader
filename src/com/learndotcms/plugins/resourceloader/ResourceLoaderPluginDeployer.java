@@ -51,7 +51,8 @@ public class ResourceLoaderPluginDeployer implements PluginDeployer {
 		throw new DotRuntimeException(e.getMessage(), e);
 	}
 	
-	Field field3 = new Field("External Link (CDN)", Field.FieldType.TEXT, Field.DataType.TEXT, st, false, false, false, 3, "", "", "", false, false, false);
+	Field field3 = new Field("External Link (CDN)", Field.FieldType.TEXT, Field.DataType.TEXT, st, false, false, false, 3, "", "", "^(http)(.*)$", false, false, false);
+	field3.setHint("Links should begin with http:// or https://");
 	field3.setVelocityVarName("cdn");
     try {
 		FieldFactory.saveField(field3);
@@ -78,7 +79,8 @@ public class ResourceLoaderPluginDeployer implements PluginDeployer {
 		throw new DotRuntimeException(e.getMessage(), e);
 	}
 	
-	Field field6 = new Field("Resource ID", Field.FieldType.TEXT, Field.DataType.TEXT, st, false, true, true, 6, "", "", "[0-9a-zA-Z-,]*", false, false, true);
+	Field field6 = new Field("Resource ID", Field.FieldType.TEXT, Field.DataType.TEXT, st, false, true, true, 6, "", "", "[0-9a-zA-Z-]*", false, false, true);
+	field6.setHint("Resource names should contain only letters, numbers, or dashes. No spaces or other punctuation.");
 	field6.setVelocityVarName("resourceId");
 	try {
 		FieldFactory.saveField(field6);
