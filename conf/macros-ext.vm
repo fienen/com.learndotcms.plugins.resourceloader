@@ -21,6 +21,18 @@
 ##     $boxCssMinify  - Enable or disable minifying along with combining of CSS files. (bool; default:true)
 ##     $boxCssCache   - Enable or disable CDN caching along with combining of CSS files. (bool; default:true)
 ##     $boxCssVersion - Set a version number for your combined CSS file (str; default:'1')
+##     $boxJs         - Enables BoxJS (http://boxjs.com/) to create a single, minified, CDN cached version
+##                      of your JS. (bool; default:false)
+##     $boxJsDefer    - Normally, Boxjs will fetch your scripts as soon as you call it. But there may be times 
+##                      when you'd like to control when the scripts are requested, perhaps based on some kind 
+##                      of condition for example. You must manually add <script>box.get();</script> where you
+##                      want the code executed. (bool; default:false)
+##     $boxJsAppend   - By default, Boxjs will append the script element to the bottom of the page. Setting 
+##                      this to false will add your scripts to the DOM using document.write. 
+##                      (bool; default:true)
+##     $boxJsMinify   - Enable or disable minifying along with combining of JS files. (bool; default:true)
+##     $boxJsCache    - Enable or disable CDN caching along with combining of JS files. (bool; default:true)
+##     $boxJsVersion  - Set a version number for your combined JS file (str; default:'1')
 ##
 #macro(loadResource $library)
 	## SET DEFAULT CACHE TIME
@@ -60,6 +72,11 @@
 		#if(!$UtilMethods.isSet($boxCss))
 			#set($boxCss = false)
 		#end
+
+		## DEFAULT TO DISABLE BOXJS FOR JS FILES
+		#if(!$UtilMethods.isSet($boxJs))
+			#set($boxJs = false)
+		#end
 		
 		## CHECK TO SEE IF WE'VE STARTED TRACKING LOADED LIBRARIES. IF NOT, START NOW.
 		#if(!$UtilMethods.isSet($loadedLibraries))
@@ -91,7 +108,12 @@
 					
 					## SET UP DIFFERENT MARKUP FOR FILE TYPES
 					#if($file.fileName.contains('js'))
+						## CHECK FOR CDN CACHING/MINIFYING VIA BOXJS
+						#if($boxJs)
+							#set($boxJsSrc = "$!{boxJsSrc},'dotAsset/${file.identifier}.js'")
+						#else
 <script src="${src}"></script>
+						#end
 					#elseif($file.fileName.contains('css'))
 						## CHECK FOR CDN CACHING/MINIFYING VIA BOXCSS
 						#if($boxCss)
@@ -123,6 +145,35 @@
 					#end
 <link rel="stylesheet" type="text/css" href="http://www.boxcss.com/boxme?host=http://${request.getServerName()}/dotAsset/&amp;include=${boxCssSrc.substring(1)}$!{boxCssVars}" />
 				#end
+
+				## SPIT OUT THE BOXJS PROCESSED JS IF IT WAS REQUESTED
+				#if($boxJs)
+					## SET UP BOXJS CUSTOMIZATIONS
+					#if($UtilMethods.isSet($boxJsDefer))
+						#set($boxJsVars = "$!{boxJsVars}, defer: ${boxJsDefer}")
+					#end
+					#if($UtilMethods.isSet($boxJsAppend))
+						#set($boxJsVars = "$!{boxJsVars}, append: ${boxJsAppend}")
+					#end
+					#if($UtilMethods.isSet($boxJsMinify))
+						#set($boxJsVars = "$!{boxJsVars}, minify: ${boxJsMinify}")
+					#end
+					#if($UtilMethods.isSet($boxJsCache))
+						#set($boxJsVars = "$!{boxJsVars}, cache: ${boxJsCache}")
+					#end
+					#if($UtilMethods.isSet($boxJsVersion))
+						#set($boxJsVars = "$!{boxJsVars}, version: ${boxJsVersion}")
+					#end
+					#if($UtilMethods.isSet($boxJsVars))
+						#set($boxJsVars = ", {${boxJsVars.substring(1)} }")
+					#end
+<script src="http://www.boxjs.com/box.js"></script>
+<script>
+	Box('http://${request.getServerName()}/', [
+		${boxJsSrc.substring(1)}
+	]$!{boxJsVars});
+</script>
+				#end
 			## TRY TO GET IT FROM OUR DEFAULT CDN SOURCES
 			#else
 				## IS THE REQUESTED LIBRARY IN THE DEFAULT LIST?
@@ -143,6 +194,9 @@
 <!-- DEBUG INFO (library: ${library}) 
 	${esc.d}commentBreaks: ${commentBreaks}
 	Shared Host ID: $!{pluginapitool.loadProperty("com.learndotcms.plugins.resourceloader","sharedHostId")}
+	Enable BoxJS: ${boxJs}
+	Enable BoxCSS: ${boxCss}
+	Cache for: ${resourceCache} seconds
 	Files in library: ${dotcontent.count("+structureName:WebResource +(conhost:${host.identifier}$!{sharedHost}) +WebResource.resourceId:${library}")}
 	Currently loaded: ${loadedLibraries}
 -->
