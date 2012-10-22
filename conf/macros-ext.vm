@@ -15,7 +15,12 @@
 ## Optional Parameters:
 ##     $commentBreaks - Show HTML comments before and after loading the library files. (bool; default: true)
 ##     $htmlDebug     - Prints debug info. (bool; default: false)
-##	   $resourceCache - Cache time for resources, in seconds (int; default: 86400)
+##     $resourceCache - Cache time for resources, in seconds (int; default: 86400)
+##     $boxCss        - Enables BoxCSS (http://boxcss.com/) to create a single, minified, CDN cached version
+##                      of your CSS. (bool; default:false)
+##     $boxCssMinify  - Enable or disable minifying along with combining of CSS files. (bool; default:true)
+##     $boxCssCache   - Enable or disable CDN caching along with combining of CSS files. (bool; default:true)
+##     $boxCssVersion - Set a version number for your combined CSS file (str; default:'1')
 ##
 #macro(loadResource $library)
 	## SET DEFAULT CACHE TIME
@@ -50,6 +55,11 @@
 		#if(!$UtilMethods.isSet($htmlDebug))
 			#set($htmlDebug = false)
 		#end
+
+		## DEFAULT TO DISABLE BOXCSS FOR CSS FILES
+		#if(!$UtilMethods.isSet($boxCss))
+			#set($boxCss = false)
+		#end
 		
 		## CHECK TO SEE IF WE'VE STARTED TRACKING LOADED LIBRARIES. IF NOT, START NOW.
 		#if(!$UtilMethods.isSet($loadedLibraries))
@@ -83,7 +93,12 @@
 					#if($file.fileName.contains('js'))
 <script src="${src}"></script>
 					#elseif($file.fileName.contains('css'))
+						## CHECK FOR CDN CACHING/MINIFYING VIA BOXCSS
+						#if($boxCss)
+							#set($boxCssSrc = "$!{boxCssSrc},${file.identifier}.css")
+						#else
 <link rel="stylesheet" type="text/css" href="${src}" />
+						#end
 					#elseif($file.fileName.contains('vtl'))
 						#dotParse($src)
 					#end
@@ -92,6 +107,21 @@
 					#if($UtilMethods.isSet($file.code))
 						${render.eval($file.code)}
 					#end
+				#end
+
+				## SPIT OUT THE BOXCSS PROCESSED CSS IF IT WAS REQUESTED
+				#if($boxCss)
+					## SET UP BOXCSS CUSTOMIZATIONS
+					#if($UtilMethods.isSet($boxCssMinify))
+						#set($boxCssVars = "&amp;minify=${boxCssMinify}")
+					#end
+					#if($UtilMethods.isSet($boxCssCache))
+						#set($boxCssVars = "$!{boxCssVars}&amp;cache=${boxCssCache}")
+					#end
+					#if($UtilMethods.isSet($boxCssVersion))
+						#set($boxCssVars = "$!{boxCssVars}&amp;version=${boxCssVersion}")
+					#end
+<link rel="stylesheet" type="text/css" href="http://www.boxcss.com/boxme?host=http://${request.getServerName()}/dotAsset/&amp;include=${boxCssSrc.substring(1)}$!{boxCssVars}" />
 				#end
 			## TRY TO GET IT FROM OUR DEFAULT CDN SOURCES
 			#else
