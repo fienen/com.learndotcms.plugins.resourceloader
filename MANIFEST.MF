@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
 Deploy-Class: com.learndotcms.plugins.resourceloader.ResourceLoaderPluginDeployer
 Plugin-Name: Resource Loader Plugin
-Plugin-Version: 1.121020
+Plugin-Version: 1.0.121022
 Author: Michael Fienen ( fienen@gmail.com - http://learndotcms.com/ )

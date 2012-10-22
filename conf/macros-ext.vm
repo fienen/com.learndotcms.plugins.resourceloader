@@ -1,7 +1,7 @@
 ## Macro:       loadResource()
 ## Author:      Michael Fienen
-## Date:        12.10.21
-## Version:     1.121021
+## Date:        12.10.22
+## Version:     1.0.121022
 ## E-mail:      fienen@gmail.com
 ## Website:     http://learndotcms.com/
 ## Description: Loads a set of files to an HTML page based on a library ID. Supports JavaScript, CSS, or VTL.
