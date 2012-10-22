@@ -19,7 +19,9 @@ public class ResourceLoaderPluginDeployer implements PluginDeployer {
     st.setName("Web Resource Test");
     st.setDescription("Common CSS/JS/VTL Files used for sharing and building templates.");
     st.setFixed(false);
-    st.setStructureType(Structure.STRUCTURE_TYPE_FILEASSET);
+    st.setSystem(false);
+    st.setStructureType(4);
+    st.setVelocityVarName('WebResourceTest')
 	try {
 		StructureFactory.saveStructure(st);
 	} catch (Exception e) {
