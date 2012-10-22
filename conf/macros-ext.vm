@@ -58,31 +58,27 @@
 			#set($_temp = $!defaultResources.put("webfont", "http://ajax.googleapis.com/ajax/libs/webfont/1.0.31/webfont.js"))
 		#end
 		
+		## INITIALIZE ALL OUR DEFAULT SETTINGS
 		## DEFAULT TO SHOWING COMMENTS BREAKS FOR THE RESOURCE UNLESS OTHERWISE SET
 		#if(!$UtilMethods.isSet($commentBreaks))
 			#set($commentBreaks = true)
 		#end
-		
 		## DEFAULT TO NOT SHOWING DEBUG DATA
 		#if(!$UtilMethods.isSet($htmlDebug))
 			#set($htmlDebug = false)
 		#end
-
 		## DEFAULT TO DISABLE BOXCSS FOR CSS FILES
 		#if(!$UtilMethods.isSet($boxCss))
 			#set($boxCss = false)
 		#end
-
 		## DEFAULT TO DISABLE BOXJS FOR JS FILES
 		#if(!$UtilMethods.isSet($boxJs))
 			#set($boxJs = false)
-		#end
-		
+		#end		
 		## CHECK TO SEE IF WE'VE STARTED TRACKING LOADED LIBRARIES. IF NOT, START NOW.
 		#if(!$UtilMethods.isSet($loadedLibraries))
 			#set($loadedLibraries = $!contents.getEmptyList())
-		#end
-		
+		#end		
 		## SET UP THE SHARED HOST FOR THE FILE QUERY, IF PROVIDED
 		#if($UtilMethods.isSet($pluginapitool.loadProperty("com.learndotcms.plugins.resourceloader","sharedHostId")))
 			#set($sharedHost = " conhost:${pluginapitool.loadProperty('com.learndotcms.plugins.resourceloader','sharedHostId')}")
