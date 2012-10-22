@@ -7,7 +7,8 @@
 ## Description: Loads a set of files to an HTML page based on a library ID. Supports JavaScript, CSS, or VTL.
 ##              Supports shared hosts by setting the host's ID in the plugin's plugin.properties file. Has
 ##              built in support for all Google Hosted Libraries without needing to upload any files to your
-##              server. Use the file's Sort Order field to control loading priority.
+##              server. Also enables you to use the BoxJS/CSS proxy CDN service for minifying and combining
+##              your files. Use the file's Sort Order field to control loading priority.
 ##
 ## Required Parameters:
 ##     $library       - The name of the library you wish to load. (str)
@@ -91,7 +92,7 @@
 			#end
 		
 			## GET THE FILES ASSOCIATED WITH THIS RESOURCE LIBRARY
-			#set($libraryQuery = "+structureName:WebResource +(conhost:${host.identifier}$!{sharedHost}) +WebResource.resourceId:${library}")
+			#set($libraryQuery = "+structureName:${pluginapitool.loadProperty('com.learndotcms.plugins.resourceloader','webResourceVarName')} +(conhost:${host.identifier}$!{sharedHost}) +WebResource.resourceId:${library}")
 			#if($dotcontent.count($libraryQuery) > 0)
 				#foreach($file in $dotcontent.pull($libraryQuery,0,'WebResource.sortOrder asc'))
 					## SET THE APPROPRIATE FILE SOURCE

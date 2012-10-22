@@ -4,6 +4,8 @@ import com.dotmarketing.cache.FieldsCache;
 import com.dotmarketing.business.DotStateException;
 import com.dotmarketing.exception.DotDataException;
 import com.dotmarketing.exception.DotRuntimeException;
+import com.dotmarketing.plugin.business.PluginAPI;
+import com.dotmarketing.plugin.business.PluginAPIImpl;
 import com.dotmarketing.plugin.PluginDeployer;
 import com.dotmarketing.portlets.structure.model.Field;
 import com.dotmarketing.portlets.structure.model.Field.DataType;
@@ -15,13 +17,15 @@ import com.dotmarketing.util.Logger;
 
 public class ResourceLoaderPluginDeployer implements PluginDeployer {
   public boolean deploy() {
+  	String structureName = pluginAPI.loadProperty("com.learndotcms.plugins.resourceloader", "webResourceName");
+  	String structureVarName = pluginAPI.loadProperty("com.learndotcms.plugins.resourceloader", "webResourceVarName");
     Structure st = new Structure();
-    st.setName("Web Resource Test");
+    st.setName(structureName);
     st.setDescription("Common CSS/JS/VTL Files used for sharing and building templates.");
     st.setFixed(false);
     st.setSystem(false);
-    st.setStructureType(4);
-    st.setVelocityVarName('WebResourceTest')
+    st.setStructureType(Structure.STRUCTURE_TYPE_FILEASSET);
+    st.setVelocityVarName(structureVarName);
 	try {
 		StructureFactory.saveStructure(st);
 	} catch (Exception e) {
