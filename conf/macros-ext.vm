@@ -47,9 +47,13 @@
 		#if(!$UtilMethods.isSet($defaultResources))
 			#set($defaultResources = $!contents.getEmptyMap())
 			#set($_temp = $!defaultResources.put("angularjs", "http://ajax.googleapis.com/ajax/libs/angularjs/1.0.2/angular.min.js"))
+			## chromeframe WAS A LEGACY NAME, NOT THE FORMAL GOOGLE NAME. PROBABLY SAFE TO REMOVE. USE chrome-frame.
 			#set($_temp = $!defaultResources.put("chromeframe", "http://ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"))
+			#set($_temp = $!defaultResources.put("chrome-frame", "http://ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"))
 			#set($_temp = $!defaultResources.put("dojo", "http://ajax.googleapis.com/ajax/libs/dojo/1.8.1/dojo/dojo.js"))
+			## extjs WAS A LEGACY NAME, NOT THE FORMAL GOOGLE NAME. PROBABLY SAFE TO REMOVE. USE ext-core.
 			#set($_temp = $!defaultResources.put("extjs", "ajax.googleapis.com/ajax/libs/ext-core/3.1.0/ext-core.js"))
+			#set($_temp = $!defaultResources.put("ext-core", "ajax.googleapis.com/ajax/libs/ext-core/3.1.0/ext-core.js"))
 			#set($_temp = $!defaultResources.put("jquery", "http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"))
 			#set($_temp = $!defaultResources.put("jqueryui", "http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.0/jquery-ui.min.js"))
 			#set($_temp = $!defaultResources.put("mootools", "http://ajax.googleapis.com/ajax/libs/mootools/1.4.5/mootools-yui-compressed.js"))
