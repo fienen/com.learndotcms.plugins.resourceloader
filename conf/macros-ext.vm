@@ -17,6 +17,8 @@
 ##     $commentBreaks - Show HTML comments before and after loading the library files. (bool; default: true)
 ##     $htmlDebug     - Prints debug info. (bool; default: false)
 ##     $resourceCache - Cache time for resources, in seconds (int; default: 86400)
+##     $forceSsl      - Set how External/CDN links should behave regarding security. Can be: none, never, 
+##                      always, or relative. (str; default: none)
 ##     $boxCss        - Enables BoxCSS (http://boxcss.com/) to create a single, minified, CDN cached version
 ##                      of your CSS. (bool; default:false)
 ##     $boxCssMinify  - Enable or disable minifying along with combining of CSS files. (bool; default:true)
@@ -43,26 +45,6 @@
 	
 	## CACHE RESOURCE CALLS
 	#dotcache("resourceLoader-${library}",$resourceCache)
-		## ESTABLISH DEFAULT REMOTE RESOURCE SET
-		#if(!$UtilMethods.isSet($defaultResources))
-			#set($defaultResources = $!contents.getEmptyMap())
-			#set($_temp = $!defaultResources.put("angularjs", "http://ajax.googleapis.com/ajax/libs/angularjs/1.0.2/angular.min.js"))
-			## chromeframe WAS A LEGACY NAME, NOT THE FORMAL GOOGLE NAME. PROBABLY SAFE TO REMOVE. USE chrome-frame.
-			#set($_temp = $!defaultResources.put("chromeframe", "http://ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"))
-			#set($_temp = $!defaultResources.put("chrome-frame", "http://ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"))
-			#set($_temp = $!defaultResources.put("dojo", "http://ajax.googleapis.com/ajax/libs/dojo/1.8.1/dojo/dojo.js"))
-			## extjs WAS A LEGACY NAME, NOT THE FORMAL GOOGLE NAME. PROBABLY SAFE TO REMOVE. USE ext-core.
-			#set($_temp = $!defaultResources.put("extjs", "ajax.googleapis.com/ajax/libs/ext-core/3.1.0/ext-core.js"))
-			#set($_temp = $!defaultResources.put("ext-core", "ajax.googleapis.com/ajax/libs/ext-core/3.1.0/ext-core.js"))
-			#set($_temp = $!defaultResources.put("jquery", "http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"))
-			#set($_temp = $!defaultResources.put("jqueryui", "http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.0/jquery-ui.min.js"))
-			#set($_temp = $!defaultResources.put("mootools", "http://ajax.googleapis.com/ajax/libs/mootools/1.4.5/mootools-yui-compressed.js"))
-			#set($_temp = $!defaultResources.put("prototype", "http://ajax.googleapis.com/ajax/libs/prototype/1.7.1.0/prototype.js"))
-			#set($_temp = $!defaultResources.put("scriptaculous", "http://ajax.googleapis.com/ajax/libs/scriptaculous/1.9.0/scriptaculous.js"))
-			#set($_temp = $!defaultResources.put("swfobjcet", "http://ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js"))
-			#set($_temp = $!defaultResources.put("webfont", "http://ajax.googleapis.com/ajax/libs/webfont/1.0.31/webfont.js"))
-		#end
-		
 		## INITIALIZE ALL OUR DEFAULT SETTINGS
 		## DEFAULT TO SHOWING COMMENTS BREAKS FOR THE RESOURCE UNLESS OTHERWISE SET
 		#if(!$UtilMethods.isSet($commentBreaks))
@@ -88,6 +70,34 @@
 		#if($UtilMethods.isSet($pluginapitool.loadProperty("com.learndotcms.plugins.resourceloader","sharedHostId")))
 			#set($sharedHost = " conhost:${pluginapitool.loadProperty('com.learndotcms.plugins.resourceloader','sharedHostId')}")
 		#end
+		## DEFAULT TO NOT CHANGE EXTERNAL LINK SECURITY
+		#if(!$UtilMethods.isSet($forceSsl))
+			#set($forceSsl = 'none')
+		#elseif($forceSsl == 'never')
+			## USED BELOW IN $defaultResources TO MAKE SURE THEY RESPECT THE SETTING AS WELL AS USER DEFINED OPTIONS
+			#set($defaultSsl = 'http:')
+		#elseif($forceSsl == 'always')
+			#set($defaultSsl = 'https:')
+		#end
+		## ESTABLISH DEFAULT REMOTE RESOURCE SET
+		#if(!$UtilMethods.isSet($defaultResources))
+			#set($defaultResources = $!contents.getEmptyMap())
+			#set($_temp = $!defaultResources.put("angularjs", "$!{defaultSsl}//ajax.googleapis.com/ajax/libs/angularjs/1.0.2/angular.min.js"))
+			## chromeframe WAS A LEGACY NAME, NOT THE FORMAL GOOGLE NAME. PROBABLY SAFE TO REMOVE. USE chrome-frame.
+			#set($_temp = $!defaultResources.put("chromeframe", "$!{defaultSsl}//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"))
+			#set($_temp = $!defaultResources.put("chrome-frame", "$!{defaultSsl}//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"))
+			#set($_temp = $!defaultResources.put("dojo", "$!{defaultSsl}//ajax.googleapis.com/ajax/libs/dojo/1.8.1/dojo/dojo.js"))
+			## extjs WAS A LEGACY NAME, NOT THE FORMAL GOOGLE NAME. PROBABLY SAFE TO REMOVE. USE ext-core.
+			#set($_temp = $!defaultResources.put("extjs", "$!{defaultSsl}//ajax.googleapis.com/ajax/libs/ext-core/3.1.0/ext-core.js"))
+			#set($_temp = $!defaultResources.put("ext-core", "$!{defaultSsl}//ajax.googleapis.com/ajax/libs/ext-core/3.1.0/ext-core.js"))
+			#set($_temp = $!defaultResources.put("jquery", "$!{defaultSsl}//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"))
+			#set($_temp = $!defaultResources.put("jqueryui", "$!{defaultSsl}//ajax.googleapis.com/ajax/libs/jqueryui/1.9.0/jquery-ui.min.js"))
+			#set($_temp = $!defaultResources.put("mootools", "$!{defaultSsl}//ajax.googleapis.com/ajax/libs/mootools/1.4.5/mootools-yui-compressed.js"))
+			#set($_temp = $!defaultResources.put("prototype", "$!{defaultSsl}//ajax.googleapis.com/ajax/libs/prototype/1.7.1.0/prototype.js"))
+			#set($_temp = $!defaultResources.put("scriptaculous", "$!{defaultSsl}//ajax.googleapis.com/ajax/libs/scriptaculous/1.9.0/scriptaculous.js"))
+			#set($_temp = $!defaultResources.put("swfobjcet", "$!{defaultSsl}//ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js"))
+			#set($_temp = $!defaultResources.put("webfont", "$!{defaultSsl}//ajax.googleapis.com/ajax/libs/webfont/1.0.31/webfont.js"))
+		#end
 		
 		## IF THIS LIBRARY HASN'T BEEN LOADED ALREADY, DO IT (PREVENTS REDUNDANT LOADS)
 		#if(!$loadedLibraries.contains($library))
@@ -101,7 +111,18 @@
 				#foreach($file in $dotcontent.pull($libraryQuery,0,'WebResource.sortOrder asc'))
 					## SET THE APPROPRIATE FILE SOURCE
 					#if($file.source.selectValue == 'cdn')
-						#set($src = $file.cdn)
+						## CHECK SECURITY OF EXTERNAL LINKS
+						#if($forceSsl != 'none')
+							#if($forceSsl == 'never')
+								#set($src = $file.cdn.replaceAll('https','http'))
+							#elseif($forceSsl == 'always')
+								#set($src = $file.cdn.replaceAll('http:','https:'))
+							#elseif($forceSsl == 'relative')
+								#set($src = $file.cdn.replaceAll('http(s?):',''))
+							#end
+						#else
+							#set($src = $file.cdn)
+						#end
 					#else
 						## THIS RETURNS AN UGLY /dotAsset PATH, NEED TO FIND THE HUMAN-READABLE URI
 						#set($src = $filetool.getURI($filetool.getFile($file.identifier, true)))
