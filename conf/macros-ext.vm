@@ -17,6 +17,8 @@
 ##     $commentBreaks - Show HTML comments before and after loading the library files. (bool; default: true)
 ##     $htmlDebug     - Prints debug info. (bool; default: false)
 ##     $resourceCache - Cache time for resources, in seconds (int; default: 86400)
+##     $forceSsl      - Set how External/CDN links should behave regarding security. Can be: none, never, 
+##                      always, or relative. (str; default: none)
 ##     $boxCss        - Enables BoxCSS (http://boxcss.com/) to create a single, minified, CDN cached version
 ##                      of your CSS. (bool; default:false)
 ##     $boxCssMinify  - Enable or disable minifying along with combining of CSS files. (bool; default:true)
@@ -88,6 +90,10 @@
 		#if($UtilMethods.isSet($pluginapitool.loadProperty("com.learndotcms.plugins.resourceloader","sharedHostId")))
 			#set($sharedHost = " conhost:${pluginapitool.loadProperty('com.learndotcms.plugins.resourceloader','sharedHostId')}")
 		#end
+		## DEFAULT TO NOT CHANGE EXTERNAL LINK SECURITY
+		#if(!$UtilMethods.isSet($forceSsl))
+			#set($forceSsl = 'none')
+		#end
 		
 		## IF THIS LIBRARY HASN'T BEEN LOADED ALREADY, DO IT (PREVENTS REDUNDANT LOADS)
 		#if(!$loadedLibraries.contains($library))
@@ -101,7 +107,18 @@
 				#foreach($file in $dotcontent.pull($libraryQuery,0,'WebResource.sortOrder asc'))
 					## SET THE APPROPRIATE FILE SOURCE
 					#if($file.source.selectValue == 'cdn')
-						#set($src = $file.cdn)
+						## CHECK SECURITY OF EXTERNAL LINKS
+						#if($forceSsl != 'none')
+							#if($forceSsl == 'never')
+								#set($src = $file.cdn.replaceAll('https','http'))
+							#elseif($forceSsl == 'always')
+								#set($src = $file.cdn.replaceAll('http:','https:'))
+							#elseif($forceSsl == 'relative')
+								#set($src = $file.cdn.replaceAll('http(s?):',''))
+							#end
+						#else
+							#set($src = $file.cdn)
+						#end
 					#else
 						## THIS RETURNS AN UGLY /dotAsset PATH, NEED TO FIND THE HUMAN-READABLE URI
 						#set($src = $filetool.getURI($filetool.getFile($file.identifier, true)))
